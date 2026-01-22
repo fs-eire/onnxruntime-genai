@@ -29,7 +29,7 @@ def _onnxruntime_dependency() -> str:
     ort_version = os.environ.get("ONNXRUNTIME_VERSION", "1.20.1")
 
     if package_name == "onnxruntime-genai":
-        dependency = "onnxruntime"
+        dependency = "onnxruntime-webgpu"
 
         import platform
         # win arm64 whls are only available in onnxruntime-qnn

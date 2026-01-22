@@ -273,6 +273,7 @@ int main(int argc, char** argv) {
   OgaHandle handle;
   try {
     const auto opts = benchmark::ParseOptionsFromCommandLine(argc, argv);
+    OgaRegisterExecutionProviderLibrary("WebGPU EP", "onnxruntime_providers_webgpu.dll");
     RunBenchmark(opts);
     return 0;
   } catch (const std::exception& e) {
