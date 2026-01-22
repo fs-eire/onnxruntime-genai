@@ -273,6 +273,15 @@ int main(int argc, char** argv) {
   OgaHandle handle;
   try {
     const auto opts = benchmark::ParseOptionsFromCommandLine(argc, argv);
+#ifdef _ORT_GENAI_USE_WEBGPU_PLUGIN
+  #if defined(_WIN32)
+    OgaRegisterExecutionProviderLibrary("WebGPU EP", "onnxruntime_providers_webgpu.dll");
+  #elif defined(__APPLE__)
+    OgaRegisterExecutionProviderLibrary("WebGPU EP", "libonnxruntime_providers_webgpu.dylib");
+  #else  // Linux
+    OgaRegisterExecutionProviderLibrary("WebGPU EP", "libonnxruntime_providers_webgpu.so");
+  #endif
+#endif
     RunBenchmark(opts);
     return 0;
   } catch (const std::exception& e) {

@@ -834,7 +834,22 @@ DeviceInterface* SetProviderSessionOptions(OrtSessionOptions& session_options,
         keys.emplace_back(option.first.c_str());
         values.emplace_back(option.second.c_str());
       }
-      session_options.AppendExecutionProvider(provider_options.name.c_str(), keys.data(), values.data(), keys.size());
+#ifdef _ORT_GENAI_USE_WEBGPU_PLUGIN
+      if (provider_options.name == "WebGPU") {
+        // filter only GPU devices
+        auto devices = GetOrtEnv().GetEpDevices();
+        auto webgpu_devices = std::vector<const OrtEpDevice*>{};
+        std::copy_if(devices.begin(), devices.end(), std::back_inserter(webgpu_devices),
+                     [](const OrtEpDevice* device) {
+                       constexpr std::string_view webgpu_ep_name = "WebGpuExecutionProvider";
+                       return webgpu_ep_name == Ort::api->EpDevice_EpName(device);
+                     });
+        session_options.AppendExecutionProvider_V2(GetOrtEnv(), webgpu_devices, std::unordered_map<std::string, std::string>(provider_options.options.begin(), provider_options.options.end()));
+      } else
+#endif
+      {
+        session_options.AppendExecutionProvider(provider_options.name.c_str(), keys.data(), values.data(), keys.size());
+      }
 #if defined(_WIN32)
       if (provider_options.name == "VitisAI") {
         if (const auto opt_it = std::find_if(provider_options.options.begin(), provider_options.options.end(),

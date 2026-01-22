@@ -109,7 +109,7 @@ if __name__ == "__main__":
         type=str,
         required=False,
         default="follow_config",
-        choices=["cpu", "cuda", "follow_config"],
+        choices=["cpu", "cuda", "webgpu", "follow_config"],
         help="Execution provider to run the ONNX Runtime session with. Defaults to follow_config that uses the execution provider listed in the genai_config.json instead.",
     )
     parser.add_argument("-b", "--num_beams", type=int, default=4, help="Number of beams")

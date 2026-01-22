@@ -24,6 +24,11 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.30.0")
   cmake_policy(SET CMP0169 OLD)
 endif()
 
+# for parity test
+if (ORT_GENAI_USE_WEBGPU_PLUGIN)
+  add_compile_definitions(_ORT_GENAI_USE_WEBGPU_PLUGIN)
+endif()
+
 if(MSVC)
   # DLL initialization errors due to old conda msvcp140.dll dll are a result of the new MSVC compiler
   # See https://developercommunity.visualstudio.com/t/Access-violation-with-std::mutex::lock-a/10664660#T-N10668856
