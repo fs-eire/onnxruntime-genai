@@ -23,6 +23,22 @@ using Clock = std::chrono::steady_clock;
 using Duration = Clock::duration;
 using DurationFp = std::chrono::duration<float, Duration::period>;
 
+// store a timestamp for last key press, initialized as program start time
+std::chrono::steady_clock::time_point last_key_press_time = std::chrono::steady_clock::now();
+
+void WaitForPressAnyKey(const std::string prompt) {
+  std::cout << prompt << "\n";
+  std::cout << "Time since last key press: "
+            << ((double)std::chrono::duration_cast<std::chrono::nanoseconds>(
+                    std::chrono::steady_clock::now() - last_key_press_time)
+                    .count()) /
+                   1e9
+            << " seconds\n";
+  std::cout.flush();
+  std::cin.get();
+  last_key_press_time = std::chrono::steady_clock::now();
+}
+
 class Timing {
  public:
   Timing(const Timing&) = delete;
@@ -144,6 +160,8 @@ std::string GeneratePrompt(const benchmark::Options& opts, size_t num_prompt_tok
 }
 
 void RunBenchmark(const benchmark::Options& opts) {
+  WaitForPressAnyKey(" ### - STEP.1 - Starting...");
+
   std::unique_ptr<OgaModel> model;
 
   if (opts.batch_size > 1 && opts.execution_provider == "NvTensorRtRtx") {
@@ -163,6 +181,8 @@ void RunBenchmark(const benchmark::Options& opts) {
   } else {
     model = OgaModel::Create(opts.model_path.c_str());
   }
+
+  WaitForPressAnyKey(" ### - STEP.2 - Model Loaded, preparing prompt...");
 
   auto tokenizer = OgaTokenizer::Create(*model);
 
@@ -187,6 +207,8 @@ void RunBenchmark(const benchmark::Options& opts) {
   const size_t num_tokens = num_prompt_tokens + opts.num_tokens_to_generate;
   const auto generator_params = MakeGeneratorParams(opts, *model, num_tokens);
 
+  WaitForPressAnyKey(" ### - STEP.3 - Prompt prepared, starting warmup...");
+
   // warmup
   if (opts.verbose) std::cout << "Running warmup iterations (" << opts.num_warmup_iterations << ")...\n";
   for (size_t i = 0; i < opts.num_warmup_iterations; ++i) {
@@ -206,6 +228,8 @@ void RunBenchmark(const benchmark::Options& opts) {
       std::cout << "[OUTPUT BEGIN]" << output << "[OUTPUT END]\n";
     }
   }
+
+  WaitForPressAnyKey(" ### - STEP.4 - Warmup complete, starting iterations...");
 
   std::vector<Duration> e2e_gen_times, prompt_processing_times, token_gen_times, sampling_times;
   // note: be sure to reserve enough to avoid vector reallocations in the measured code
@@ -265,6 +289,8 @@ void RunBenchmark(const benchmark::Options& opts) {
 
     std::cout << "Peak working set size (bytes): " << benchmark::utils::GetPeakWorkingSetSizeInBytes() << "\n";
   }
+
+  WaitForPressAnyKey(" ### - STEP.5 - Completed...");
 }
 
 }  // namespace
